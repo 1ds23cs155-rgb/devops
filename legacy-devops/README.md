@@ -9,6 +9,7 @@ This project demonstrates key DevOps concepts including:
 - **Docker**: Multi-stage builds and containerization
 - **Docker Compose**: Local development environment
 - **CI/CD**: GitHub Actions pipeline with testing and deployment
+- **Jenkins**: Self-hosted CI pipeline support
 - **Nginx**: Reverse proxy configuration
 - **Health Checks**: Application monitoring
 - **Security**: Non-root Docker user, vulnerability scanning
@@ -16,7 +17,7 @@ This project demonstrates key DevOps concepts including:
 ## 🏗️ Project Structure
 
 ```
-devOPS/
+legacy-devops/
 ├── app/                          # Node.js application
 │   ├── package.json
 │   └── server.js
@@ -62,7 +63,7 @@ rm -rf /Users/ajayreddy/Desktop/tourism-devops
 
 ```bash
 # Clone repository
-cd /Users/ajayreddy/Desktop/devOPS
+cd /Users/ajayreddy/Desktop/devOPS/legacy-devops
 
 # Start services
 docker-compose up -d
@@ -79,6 +80,19 @@ Access the application at:
 - **Health Check**: http://localhost:3000/health
 - **API Info**: http://localhost:3000/api/info
 - **Nginx Proxy**: http://localhost:80
+- **Jenkins UI**: http://localhost:8088
+
+### Jenkins Setup (inside legacy-devops)
+
+```bash
+# Start Jenkins with the stack
+docker-compose up -d
+
+# Get initial admin password
+docker exec legacy-jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+Then open `http://localhost:8088`, complete setup, and create a Pipeline job that points to the `Jenkinsfile` in this folder.
 
 ### Option 2: Local Development
 
