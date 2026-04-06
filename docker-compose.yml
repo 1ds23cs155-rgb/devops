@@ -1,0 +1,62 @@
+services:
+  # Main website service (will be scaled)
+  website:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - "80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - tourism-network
+
+  # Nginx load balancer (routes to all website instances)
+  nginx:
+    image: nginx:alpine
+    container_name: tourism-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /dev/null:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - website
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - tourism-network
+
+  # Prometheus for monitoring (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: tourism-prometheus
+    ports:
+      - "8090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    restart: unless-stopped
+    networks:
+      - tourism-network
+
+networks:
+  tourism-network:
+    driver: bridge
+
+volumes:
+  prometheus_data:

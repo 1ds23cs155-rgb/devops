@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | Visit Malaysia</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            color: #333; 
+            background-color: #f9f9f9; 
+        }
+
+        header {
+            background-color: #0d6efd;
+            padding: 20px;
+            color: white;
+        }
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .hero {
+            height: 100vh; 
+            width: 100vw; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            z-index: 2;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            animation: slideBackground 20s infinite;
+            z-index: 1;
+        }
+
+        @keyframes slideBackground {
+            0% { background-image: url('https://150429065.v2.pressablecdn.com/wp-content/uploads/2014/05/Langkawi-1.jpg'); }
+            25% { background-image: url('https://150429065.v2.pressablecdn.com/wp-content/uploads/2024/07/Langkawi.webp'); }
+            50% { background-image: url('https://150429065.v2.pressablecdn.com/wp-content/uploads/2024/07/Kek-Lok-Si-Temple-in-George-Town.webp'); }
+            75% { background-image: url('https://150429065.v2.pressablecdn.com/wp-content/uploads/2024/07/Petronas-Towers-Malaysia.webp'); }
+            100% { background-image: url('https://150429065.v2.pressablecdn.com/wp-content/uploads/2014/05/Langkawi-1.jpg'); }
+        }
+
+        .content-section {
+            padding: 50px 15%;
+        }
+        .content-section h2 {
+            font-size: 2em;
+            color: #0d6efd;
+            margin-bottom: 20px;
+        }
+        .content-section p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .highlights {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0;
+        }
+        .highlight-item {
+            width: 30%;
+            text-align: center;
+        }
+        .highlight-item h3 {
+            margin: 10px 0;
+            color: #0d6efd;
+        }
+
+        .testimonials {
+            background-color: #f4f4f4;
+            padding: 50px 15%;
+        }
+        .testimonial-item {
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Visit Malaysia</h1>
+    <nav>
+        <a href="about.html">Home</a>
+        <a href="destination.html">Destinations</a>
+        <a href="fests.html">Events</a>
+        <a href="experience.html">Experiences</a>
+    
+    </nav>
+</header>
+
+<section class="hero">
+    <h1>Discover Malaysia - Land of Diversity, Culture, and Nature</h1>
+</section>
+
+<section class="content-section">
+    <h2>About Malaysia Tourism</h2>
+    <p>Welcome to the official tourism page of Malaysia. We are dedicated to showcasing the beauty and diversity of Malaysia’s natural landscapes, cultural heritage, and vibrant cities.</p>
+    <p>Join us in exploring the essence of Malaysia, a country that offers an array of experiences across cultures, landscapes, and adventures.</p>
+</section>
+
+<section class="content-section">
+    <h2>Our Mission and Vision</h2>
+    <p><strong>Mission:</strong> To inspire travelers by showcasing Malaysia’s unique cultural, natural, and urban wonders.</p>
+    <p><strong>Vision:</strong> To establish Malaysia as a premier sustainable travel destination, celebrated for its diversity and hospitality.</p>
+</section>
+
+<section class="content-section">
+    <h2>Our Story</h2>
+    <p>From ancient rainforests to modern cityscapes, Malaysia has developed into a top global travel destination. Our tourism board has grown to embrace sustainable travel, bringing Malaysia’s rich history, diverse culture, and modern attractions to travelers from all over the world.</p>
+    <p><em>Key Milestones:</em></p>
+    <ul>
+        <li>Launch of eco-tourism initiatives in 2000</li>
+        <li>Recognition as a top travel destination in 2015</li>
+        <li>Global sustainability award in 2022</li>
+    </ul>
+</section>
+
+<section class="content-section">
+    <h2>Highlights of Malaysia</h2>
+    <div class="highlights">
+        <div class="highlight-item">
+            <h3>Cultural Diversity</h3>
+            <p>Experience the blend of Malay, Chinese, Indian, and indigenous cultures.</p>
+        </div>
+        <div class="highlight-item">
+            <h3>Natural Beauty</h3>
+            <p>Explore pristine beaches, dense rainforests, and majestic mountains.</p>
+        </div>
+        <div class="highlight-item">
+            <h3>Urban Attractions</h3>
+            <p>Discover the city attractions, modern architecture, and vibrant nightlife.</p>
+        </div>
+    </div>
+</section>
+
+<section class="content-section">
+    <h2>Why Visit Malaysia?</h2>
+    <p>Malaysia offers unique opportunities for adventure, relaxation, and cultural immersion. From exploring lush rainforests to tasting the culinary delights of street markets, there's something here for every traveler.</p>
+</section>
+
+<section class="testimonials">
+    <h2>What Our Travelers Say</h2>
+    <div class="testimonial-item">
+        <p>"Visiting Malaysia was an unforgettable experience. The blend of cultures and natural beauty is simply mesmerizing!" – Sarah, USA</p>
+    </div>
+    <div class="testimonial-item">
+        <p>"The food, the people, the landscapes—Malaysia has it all. Can’t wait to visit again!" – Javier, Spain</p>
+    </div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+{
+  "name": "devops-demo-app",
+  "version": "1.0.0",
+  "description": "Enterprise-grade DevOps demo application with testing, monitoring, and security",
+  "main": "server-enhanced.js",
+  "scripts": {
+    "start": "node server-enhanced.js",
+    "dev": "NODE_ENV=development node server-enhanced.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "audit": "npm audit",
+    "load-test": "k6 run ../load-testing/test.js"
+  },
+  "keywords": ["devops", "demo", "enterprise", "security", "monitoring"],
+  "author": "DevOps Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^16.0.3",
+    "jsonwebtoken": "^9.0.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "pino": "^8.11.0",
+    "swagger-ui-express": "^4.6.0",
+    "swagger-jsdoc": "^6.2.8",
+    "pg": "^8.9.0",
+    "sequelize": "^6.28.0"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.38.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "nodemon": "^2.0.22"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
