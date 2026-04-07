@@ -56,8 +56,11 @@ services:
 
   # Jenkins for CI/CD pipeline demo
   jenkins:
-    image: jenkins/jenkins:lts-jdk17
+    build:
+      context: .
+      dockerfile: jenkins/Dockerfile
     container_name: tourism-jenkins
+    user: "0:0"
     ports:
       - "8088:8080"
       - "50000:50000"
