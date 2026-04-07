@@ -65,23 +65,9 @@ pipeline {
       sh 'docker rm -f tourism-ci-smoke >/dev/null 2>&1 || true'
     }
     success {
-      sh '''
-        if [ -n "$SLACK_WEBHOOK_URL" ]; then
-          curl -fsS -X POST -H 'Content-type: application/json' \
-            --data '{"text":"Jenkins pipeline succeeded for tourism-devops-pipeline."}' \
-            "$SLACK_WEBHOOK_URL"
-        fi
-      '''
       echo 'Jenkins pipeline completed successfully.'
     }
     failure {
-      sh '''
-        if [ -n "$SLACK_WEBHOOK_URL" ]; then
-          curl -fsS -X POST -H 'Content-type: application/json' \
-            --data '{"text":"Jenkins pipeline failed for tourism-devops-pipeline."}' \
-            "$SLACK_WEBHOOK_URL"
-        fi
-      '''
       echo 'Pipeline failed. Check stage logs for details.'
     }
   }

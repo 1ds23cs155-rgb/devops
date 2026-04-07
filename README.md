@@ -202,7 +202,6 @@ Then open `http://localhost:8088`, complete setup, and create a Pipeline job tha
 - Builds the tourism website Docker image
 - Runs a smoke test against the container
 - Deploys to Kubernetes on `main` or `master`
-- Sends a Slack-style webhook notification when `SLACK_WEBHOOK_URL` is set
 
 ### Jenkins credentials and settings
 
@@ -228,14 +227,6 @@ Jenkins now has access to:
 - Your local kubeconfig mounted from `/Users/ajayreddy/.kube`
 
 If you want to test the deploy stage locally, make sure Docker Desktop Kubernetes is running and `kubectl get nodes` works on your Mac.
-
-### Notifications
-
-Optional Slack-style notifications are sent if you add a Jenkins environment variable named `SLACK_WEBHOOK_URL`.
-
-Suggested value:
-
-- A Slack incoming webhook URL, or any compatible webhook endpoint that accepts JSON POST requests.
 
 ## 📊 Monitoring
 
