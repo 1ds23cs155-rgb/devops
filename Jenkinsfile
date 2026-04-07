@@ -24,8 +24,13 @@ pipeline {
         sh '''
           docker rm -f tourism-ci-smoke >/dev/null 2>&1 || true
           docker run -d --name tourism-ci-smoke -p 18080:80 tourism-website:${BUILD_NUMBER}
-          sleep 3
-          curl -fsS http://127.0.0.1:18080/health
+          for i in $(seq 1 20); do
+            if curl -fsS http://host.docker.internal:18080/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          curl -fsS http://host.docker.internal:18080/health
         '''
       }
     }
