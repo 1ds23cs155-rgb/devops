@@ -196,6 +196,47 @@ docker exec tourism-jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 
 Then open `http://localhost:8088`, complete setup, and create a Pipeline job that points to this repository and uses the root `Jenkinsfile`.
 
+### What Jenkins does now
+
+- Checks out the repo from GitHub
+- Builds the tourism website Docker image
+- Runs a smoke test against the container
+- Deploys to Kubernetes on `main` or `master`
+- Sends a Slack-style webhook notification when `SLACK_WEBHOOK_URL` is set
+
+### Jenkins credentials and settings
+
+- Git credential: `Username with password`
+- Username: your GitHub username
+- Password: your GitHub Personal Access Token
+- ID: `github-token`
+
+### GitHub webhook trigger
+
+Add this webhook in your GitHub repo settings:
+
+- Payload URL: `http://YOUR_JENKINS_URL/github-webhook/`
+- Content type: `application/json`
+- Events: `Just the push event`
+
+### Kubernetes deploy from Jenkins
+
+Jenkins now has access to:
+
+- Docker CLI for image build and smoke tests
+- kubectl for `kubectl apply -f kubernetes/`
+- Your local kubeconfig mounted from `/Users/ajayreddy/.kube`
+
+If you want to test the deploy stage locally, make sure Docker Desktop Kubernetes is running and `kubectl get nodes` works on your Mac.
+
+### Notifications
+
+Optional Slack-style notifications are sent if you add a Jenkins environment variable named `SLACK_WEBHOOK_URL`.
+
+Suggested value:
+
+- A Slack incoming webhook URL, or any compatible webhook endpoint that accepts JSON POST requests.
+
 ## 📊 Monitoring
 
 ### Local Monitoring

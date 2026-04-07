@@ -61,12 +61,15 @@ services:
       dockerfile: jenkins/Dockerfile
     container_name: tourism-jenkins
     user: "0:0"
+    environment:
+      - KUBECONFIG=/root/.kube/config
     ports:
       - "8088:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
+      - /Users/ajayreddy/.kube:/root/.kube:ro
     restart: unless-stopped
     networks:
       - tourism-network
