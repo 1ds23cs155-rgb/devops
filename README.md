@@ -1,6 +1,6 @@
 # Tourism Website - Enterprise DevOps Deployment
 
-Deploy your tourism website using Docker, Kubernetes, AWS, and GitHub Actions CI/CD.
+Deploy your tourism website using Docker, Kubernetes, and GitHub Actions CI/CD.
 
 ## 📋 Project Structure
 
@@ -18,16 +18,9 @@ Deploy your tourism website using Docker, Kubernetes, AWS, and GitHub Actions CI
 ├── kubernetes/
 │   ├── deployment.yaml         # K8s deployment
 │   └── service.yaml            # K8s service & ingress
-├── terraform/
-│   ├── main.tf                 # AWS infrastructure
-│   └── variables.tf            # Terraform variables
-├── monitoring/
-│   └── prometheus.yml          # Metrics config
 ├── Jenkinsfile                 # Jenkins pipeline
 └── .github/workflows/
     └── ci-cd.yml               # GitHub Actions pipeline
-
-_Legacy:_ The earlier Node/Postgres demo project was archived at `legacy-devops/`.
 ```
 
 ## 🚀 Quick Start
@@ -43,9 +36,6 @@ docker-compose ps
 
 # Access website
 open http://localhost:8080
-
-# View metrics
-open http://localhost:8090
 
 # Jenkins UI
 open http://localhost:8088
@@ -76,41 +66,6 @@ curl http://localhost:8080/health
 curl http://localhost:8080/about.html
 curl http://localhost:8080/destination.html
 ```
-
-## ☁️ Deploy to AWS
-
-### Prerequisites
-- AWS Account
-- AWS CLI installed
-- AWS credentials configured
-
-### Steps
-
-```bash
-# Navigate to terraform directory
-cd terraform
-
-# Initialize Terraform
-terraform init
-
-# Review infrastructure plan
-terraform plan
-
-# Deploy to AWS
-terraform apply
-
-# Get the load balancer URL
-terraform output website_url
-
-# Access your website on AWS!
-```
-
-### Features
-- Auto-scaling (2-10 instances)
-- Application Load Balancer
-- Container orchestration (ECS Fargate)
-- CloudWatch logging
-- Health checks
 
 ## ⚙️ Deploy to Kubernetes
 

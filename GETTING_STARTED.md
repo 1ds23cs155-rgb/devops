@@ -18,13 +18,11 @@ open http://localhost
 # Success! Your website is running locally with:
 # - Load balancer (port 80)
 # - 3 website instances
-# - Prometheus monitoring (port 9090)
 ```
 
 **What's happening?**
 - Docker pulls images and starts 3 website instances
 - Nginx load balancer distributes traffic across all 3
-- Prometheus collects metrics about performance
 - Your HTML files are served from `/website` folder
 
 **Want to scale?**
@@ -43,69 +41,7 @@ docker-compose down
 
 ---
 
-### ☁️ Path 2: Deploy to AWS (Production)
-**Time: 15 minutes | Best for: Production deployment**
-
-#### Prerequisites
-```bash
-# Check if you have AWS CLI
-aws --version
-
-# If not: install from https://aws.amazon.com/cli/
-# Then configure:
-aws configure
-```
-
-#### Deployment Steps
-```bash
-# Step 1: Navigate to terraform
-cd /Users/ajayreddy/Desktop/tourism-devops/terraform
-
-# Step 2: Initialize and plan
-terraform init
-terraform plan
-
-# Step 3: Deploy!
-terraform apply
-# Type: yes when prompted
-
-# Step 4: Get your website URL
-terraform output website_url
-
-# Step 5: Open in browser
-open $(terraform output -raw website_url)
-```
-
-**What's happening?**
-- Terraform creates AWS infrastructure:
-  - VPC (virtual network)
-  - Application Load Balancer
-  - ECS cluster with 2-10 auto-scaling instances
-  - CloudWatch logging
-
-**Monitor AWS deployment:**
-```bash
-# View logs
-aws logs tail /ecs/tourism-website --follow
-
-# View running tasks
-aws ecs list-tasks --cluster tourism-website
-
-# Get updated URL anytime
-terraform output website_url
-```
-
-**Cleanup:**
-```bash
-# Remove everything when done
-cd terraform
-terraform destroy
-# Type: yes to confirm
-```
-
----
-
-### ⚙️ Path 3: Deploy to Kubernetes (Enterprise)
+### ⚙️ Path 2: Deploy to Kubernetes (Enterprise)
 **Time: 10 minutes | Best for: Kubernetes clusters**
 
 #### Prerequisites

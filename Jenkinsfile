@@ -1,45 +1,51 @@
 pipeline {
   agent any
 
-  options {
-    skipDefaultCheckout(true)
-  }
-
-  triggers {
-    githubPush()
-  }
-
   environment {
     KUBECONFIG = '/root/.kube/config'
+    GIT_URL = 'https://github.com/ABHIRAMCHOWDARY24/devops.git'
   }
 
   stages {
     stage('Checkout') {
       steps {
-        deleteDir()
-        checkout scm
+        script {
+          sh 'rm -rf devops || true'
+          sh 'git clone -b main ${GIT_URL} devops'
+          sh 'cd devops && ls -la'
+        }
       }
     }
 
     stage('Build Image') {
       steps {
-        sh 'docker build -t tourism-website:${BUILD_NUMBER} .'
+        script {
+          sh '''
+            cd devops
+            docker build -t tourism-website:${BUILD_NUMBER} .
+          '''
+        }
       }
     }
 
     stage('Run Container Smoke Test') {
       steps {
-        sh '''
-          docker rm -f tourism-ci-smoke >/dev/null 2>&1 || true
-          docker run -d --name tourism-ci-smoke -p 18080:80 tourism-website:${BUILD_NUMBER}
-          for i in $(seq 1 20); do
-            if curl -fsS http://host.docker.internal:18080/health >/dev/null; then
-              exit 0
-            fi
-            sleep 2
-          done
-          curl -fsS http://host.docker.internal:18080/health
-        '''
+        script {
+          sh '''
+            docker rm -f tourism-ci-smoke >/dev/null 2>&1 || true
+            docker run -d --name tourism-ci-smoke -p 18080:80 tourism-website:${BUILD_NUMBER}
+            sleep 3
+            for i in $(seq 1 10); do
+              if curl -fsS http://localhost:18080/health >/dev/null; then
+                echo "Health check passed!"
+                exit 0
+              fi
+              sleep 2
+            done
+            echo "Health check failed!"
+            exit 1
+          '''
+        }
       }
     }
 
