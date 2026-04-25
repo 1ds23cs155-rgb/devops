@@ -33,16 +33,21 @@ pipeline {
         script {
           sh '''
             docker rm -f tourism-ci-smoke >/dev/null 2>&1 || true
-            docker run -d --name tourism-ci-smoke -p 18080:80 tourism-website:${BUILD_NUMBER}
+            CONTAINER_ID=$(docker run -d --name tourism-ci-smoke tourism-website:${BUILD_NUMBER})
             sleep 3
+            CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
+            echo "Container IP: $CONTAINER_IP"
+            
             for i in $(seq 1 10); do
-              if curl -fsS http://localhost:18080/health >/dev/null; then
+              if curl -fsS http://$CONTAINER_IP/health >/dev/null; then
                 echo "Health check passed!"
+                docker rm -f tourism-ci-smoke >/dev/null 2>&1
                 exit 0
               fi
               sleep 2
             done
             echo "Health check failed!"
+            docker rm -f tourism-ci-smoke >/dev/null 2>&1
             exit 1
           '''
         }
