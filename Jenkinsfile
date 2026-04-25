@@ -4,8 +4,6 @@ pipeline {
   environment {
     KUBECONFIG = '/root/.kube/config'
     GIT_URL = 'https://github.com/ABHIRAMCHOWDARY24/devops.git'
-    DOCKER_BUILDKIT = '1'
-    BUILDKIT_PROGRESS = 'plain'
   }
 
   stages {
@@ -24,7 +22,7 @@ pipeline {
         script {
           sh '''
             cd devops
-            docker build --progress=plain -t tourism-website:${BUILD_NUMBER} .
+            docker build -t tourism-website:${BUILD_NUMBER} .
           '''
         }
       }
