@@ -4,6 +4,8 @@ pipeline {
   environment {
     KUBECONFIG = '/root/.kube/config'
     GIT_URL = 'https://github.com/ABHIRAMCHOWDARY24/devops.git'
+    DOCKER_BUILDKIT = '1'
+    BUILDKIT_PROGRESS = 'plain'
   }
 
   stages {
@@ -22,7 +24,7 @@ pipeline {
         script {
           sh '''
             cd devops
-            docker build -t tourism-website:${BUILD_NUMBER} .
+            docker build --progress=plain -t tourism-website:${BUILD_NUMBER} .
           '''
         }
       }
@@ -34,19 +36,19 @@ pipeline {
           sh '''
             docker rm -f tourism-ci-smoke >/dev/null 2>&1 || true
             CONTAINER_ID=$(docker run -d --name tourism-ci-smoke tourism-website:${BUILD_NUMBER})
-            sleep 3
+            sleep 1
             CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
             echo "Container IP: $CONTAINER_IP"
             
-            for i in $(seq 1 10); do
+            for i in $(seq 1 5); do
               if curl -fsS http://$CONTAINER_IP/health >/dev/null; then
-                echo "Health check passed!"
+                echo "✓ Health check passed!"
                 docker rm -f tourism-ci-smoke >/dev/null 2>&1
                 exit 0
               fi
-              sleep 2
+              sleep 1
             done
-            echo "Health check failed!"
+            echo "✗ Health check failed!"
             docker rm -f tourism-ci-smoke >/dev/null 2>&1
             exit 1
           '''
