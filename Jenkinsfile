@@ -70,7 +70,7 @@ pipeline {
                 exit /b 1
               )
               if not exist website\\index.html (
-                echo website\index.html missing
+                echo website\\index.html missing
                 exit /b 1
               )
               for /f %%A in ('dir /b /a-d website\\*.html ^| find /c /v ""') do set COUNT=%%A
