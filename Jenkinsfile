@@ -129,7 +129,8 @@ pipeline {
           } else {
             bat '''
               @echo off
-              powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; docker rm -f $env:SMOKE_CONTAINER *> $null; docker run -d --name $env:SMOKE_CONTAINER -p ($env:SMOKE_PORT + ':80') ($env:IMAGE_NAME + ':' + $env:IMAGE_TAG) *> $null; $ok=$false; for($i=0; $i -lt 20; $i++){ try { Invoke-WebRequest -UseBasicParsing ('http://127.0.0.1:' + $env:SMOKE_PORT + '/healthcheck.html') *> $null; $ok=$true; break } catch { Start-Sleep -Seconds 1 } }; if(-not $ok){ throw 'Health check failed' }; Invoke-WebRequest -UseBasicParsing ('http://127.0.0.1:' + $env:SMOKE_PORT + '/index.html') *> $null; Write-Host 'Smoke tests passed'"
+              cmd /c "docker rm -f %SMOKE_CONTAINER% >nul 2>&1 || exit /b 0"
+              powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; docker run -d --name $env:SMOKE_CONTAINER -p ($env:SMOKE_PORT + ':80') ($env:IMAGE_NAME + ':' + $env:IMAGE_TAG) *> $null; $ok=$false; for($i=0; $i -lt 20; $i++){ try { Invoke-WebRequest -UseBasicParsing ('http://127.0.0.1:' + $env:SMOKE_PORT + '/healthcheck.html') *> $null; $ok=$true; break } catch { Start-Sleep -Seconds 1 } }; if(-not $ok){ throw 'Health check failed' }; Invoke-WebRequest -UseBasicParsing ('http://127.0.0.1:' + $env:SMOKE_PORT + '/index.html') *> $null; Write-Host 'Smoke tests passed'"
             '''
           }
         }
