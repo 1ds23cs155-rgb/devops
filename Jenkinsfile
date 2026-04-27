@@ -19,6 +19,19 @@ pipeline {
   }
 
   stages {
+    stage('Pipeline Version') {
+      steps {
+        echo 'PIPELINE_VERSION: WIN_FIX_2026_04_27_B'
+        script {
+          if (isUnix()) {
+            sh 'git rev-parse --short HEAD || true'
+          } else {
+            bat 'git rev-parse --short HEAD'
+          }
+        }
+      }
+    }
+
     stage('Checkout') {
       steps {
         deleteDir()
