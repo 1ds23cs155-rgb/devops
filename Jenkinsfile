@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     KUBECONFIG = '/root/.kube/config'
-    GIT_URL = 'https://github.com/ABHIRAMCHOWDARY24/devops.git'
+    GIT_URL = 'https://github.com/1ds23cs155-rgb/devops.git'
   }
 
   stages {
