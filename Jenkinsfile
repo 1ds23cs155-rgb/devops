@@ -1,60 +1,129 @@
 pipeline {
   agent any
 
+  options {
+    timestamps()
+    disableConcurrentBuilds()
+    buildDiscarder(logRotator(numToKeepStr: '20'))
+  }
+
   environment {
-    KUBECONFIG = '/root/.kube/config'
-    GIT_URL = 'https://github.com/1ds23cs155-rgb/devops.git'
+    IMAGE_NAME = 'devops-website'
+    IMAGE_TAG = "${BUILD_NUMBER}"
+    SMOKE_CONTAINER = 'tourism-ci-smoke'
+    SMOKE_PORT = '18080'
+  }
+
+  triggers {
+    githubPush()
   }
 
   stages {
     stage('Checkout') {
       steps {
+        deleteDir()
+        checkout scm
         script {
-          sh 'rm -rf devops || true'
-          sh 'git clone -b main ${GIT_URL} devops'
-          sh 'cd devops && ls -la'
+          if (isUnix()) {
+            sh 'git rev-parse --short HEAD'
+          } else {
+            bat 'git rev-parse --short HEAD'
+          }
         }
       }
     }
 
-    stage('Build Image') {
+    stage('Validate Website Files') {
       steps {
         script {
-          sh '''
-            cd devops
-            docker build -t tourism-website:${BUILD_NUMBER} .
-          '''
-        }
-      }
-    }
-
-    stage('Run Container Smoke Test') {
-      steps {
-        script {
-          sh '''
-            docker rm -f tourism-ci-smoke >/dev/null 2>&1 || true
-            CONTAINER_ID=$(docker run -d --name tourism-ci-smoke tourism-website:${BUILD_NUMBER})
-            sleep 1
-            CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
-            echo "Container IP: $CONTAINER_IP"
-            
-            for i in $(seq 1 5); do
-              if curl -fsS http://$CONTAINER_IP/health >/dev/null; then
-                echo "✓ Health check passed!"
-                docker rm -f tourism-ci-smoke >/dev/null 2>&1
-                exit 0
+          if (isUnix()) {
+            sh '''
+              set -e
+              test -d website
+              test -f website/index.html
+              COUNT=$(find website -maxdepth 1 -type f -name '*.html' | wc -l)
+              echo "Found ${COUNT} HTML files in website/"
+              if [ "$COUNT" -lt 1 ]; then
+                echo "No HTML files found in website/"
+                exit 1
               fi
-              sleep 1
-            done
-            echo "✗ Health check failed!"
-            docker rm -f tourism-ci-smoke >/dev/null 2>&1
-            exit 1
-          '''
+            '''
+          } else {
+            bat '''
+              @echo off
+              setlocal enabledelayedexpansion
+              if not exist website (
+                echo website folder missing
+                exit /b 1
+              )
+              if not exist website\index.html (
+                echo website\index.html missing
+                exit /b 1
+              )
+              for /f %%A in ('dir /b /a-d website\*.html ^| find /c /v ""') do set COUNT=%%A
+              echo Found !COUNT! HTML files in website/
+              if !COUNT! LSS 1 (
+                echo No HTML files found in website/
+                exit /b 1
+              )
+            '''
+          }
         }
       }
     }
 
-    stage('Deploy Monitoring Stack') {
+    stage('Build Docker Image') {
+      steps {
+        script {
+          if (isUnix()) {
+            sh '''
+              set -e
+              docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest .
+              docker image ls ${IMAGE_NAME}
+            '''
+          } else {
+            bat '''
+              @echo off
+              docker build -t %IMAGE_NAME%:%IMAGE_TAG% -t %IMAGE_NAME%:latest .
+              docker image ls %IMAGE_NAME%
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Smoke Test Container') {
+      steps {
+        script {
+          if (isUnix()) {
+            sh '''
+              set -e
+              docker rm -f ${SMOKE_CONTAINER} >/dev/null 2>&1 || true
+              docker run -d --name ${SMOKE_CONTAINER} -p ${SMOKE_PORT}:80 ${IMAGE_NAME}:${IMAGE_TAG}
+
+              for i in $(seq 1 20); do
+                if curl -fsS http://127.0.0.1:${SMOKE_PORT}/healthcheck.html >/dev/null; then
+                  echo "Health check passed"
+                  break
+                fi
+                sleep 1
+              done
+
+              curl -fsS http://127.0.0.1:${SMOKE_PORT}/healthcheck.html >/dev/null
+              curl -fsS http://127.0.0.1:${SMOKE_PORT}/index.html >/dev/null
+              echo "Smoke tests passed"
+            '''
+          } else {
+            bat '''
+              @echo off
+              powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; docker rm -f $env:SMOKE_CONTAINER *> $null; docker run -d --name $env:SMOKE_CONTAINER -p ($env:SMOKE_PORT + ':80') ($env:IMAGE_NAME + ':' + $env:IMAGE_TAG) *> $null; $ok=$false; for($i=0; $i -lt 20; $i++){ try { Invoke-WebRequest -UseBasicParsing ('http://127.0.0.1:' + $env:SMOKE_PORT + '/healthcheck.html') *> $null; $ok=$true; break } catch { Start-Sleep -Seconds 1 } }; if(-not $ok){ throw 'Health check failed' }; Invoke-WebRequest -UseBasicParsing ('http://127.0.0.1:' + $env:SMOKE_PORT + '/index.html') *> $null; Write-Host 'Smoke tests passed'"
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Deploy Website Services') {
       when {
         anyOf {
           branch 'main'
@@ -63,44 +132,29 @@ pipeline {
       }
       steps {
         script {
-          sh '''
-            echo "Deploying Prometheus and Grafana..."
-            kubectl apply -f kubernetes/prometheus-configmap.yaml
-            kubectl apply -f kubernetes/prometheus-deployment.yaml
-            kubectl apply -f kubernetes/grafana-deployment.yaml
-            sleep 10
-            kubectl get pod,svc -l app=prometheus,grafana
-          '''
+          if (isUnix()) {
+            sh '''
+              set -e
+              if command -v docker-compose >/dev/null 2>&1; then
+                COMPOSE_CMD="docker-compose"
+              else
+                COMPOSE_CMD="docker compose"
+              fi
+
+              ${COMPOSE_CMD} up -d --build website nginx
+              ${COMPOSE_CMD} ps
+            '''
+          } else {
+            bat '''
+              @echo off
+              powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; if (Get-Command docker-compose -ErrorAction SilentlyContinue) { docker-compose up -d --build website nginx; docker-compose ps } else { docker compose up -d --build website nginx; docker compose ps }"
+            '''
+          }
         }
       }
     }
 
-    stage('Deploy Application to Kubernetes') {
-      when {
-        anyOf {
-          branch 'main'
-          branch 'master'
-        }
-      }
-      steps {
-        sh '''
-          echo "Deploying tourism website application..."
-          kubectl apply -f kubernetes/deployment.yaml
-          kubectl apply -f kubernetes/service.yaml
-          kubectl rollout status deployment/tourism-website --timeout=120s
-          
-          echo "===== Deployment Summary ====="
-          kubectl get deploy,pods,svc
-          echo "============================="
-          
-          # Get service endpoints
-          echo "Service endpoints:"
-          kubectl get svc tourism-website -o jsonpath='{.status.loadBalancer.ingress[0].ip}' || echo "LoadBalancer IP not available yet"
-        '''
-      }
-    }
-
-    stage('Verify Monitoring Stack') {
+    stage('Verify Deployment') {
       when {
         anyOf {
           branch 'main'
@@ -109,64 +163,26 @@ pipeline {
       }
       steps {
         script {
-          sh '''
-            echo "Verifying monitoring stack health..."
-            sleep 15
-            
-            # Check Prometheus
-            PROMETHEUS_POD=$(kubectl get pod -l app=prometheus -o jsonpath='{.items[0].metadata.name}')
-            echo "Prometheus pod: $PROMETHEUS_POD"
-            kubectl exec $PROMETHEUS_POD -- wget -q -O- http://localhost:9090/-/healthy || echo "Prometheus health check failed"
-            
-            # Check Grafana
-            GRAFANA_POD=$(kubectl get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}')
-            echo "Grafana pod: $GRAFANA_POD"
-            kubectl exec $GRAFANA_POD -- wget -q -O- http://localhost:3000/api/health || echo "Grafana health check failed"
-            
-            # Check website
-            WEBSITE_POD=$(kubectl get pod -l app=tourism-website -o jsonpath='{.items[0].metadata.name}')
-            echo "Website pod: $WEBSITE_POD"
-            kubectl exec $WEBSITE_POD -- wget -q -O- http://localhost/health || echo "Website health check failed"
-            
-            echo "===== Pod Status ====="
-            kubectl get pods -o wide
-          '''
-        }
-      }
-    }
+          if (isUnix()) {
+            sh '''
+              set -e
+              for i in $(seq 1 20); do
+                if curl -fsS http://127.0.0.1:3000/healthcheck.html >/dev/null; then
+                  echo "Website deployment healthy"
+                  exit 0
+                fi
+                sleep 1
+              done
 
-    stage('Display Access URLs') {
-      when {
-        anyOf {
-          branch 'main'
-          branch 'master'
-        }
-      }
-      steps {
-        script {
-          sh '''
-            echo "============================================"
-            echo "   Tourism Website Deployment Complete!"
-            echo "============================================"
-            echo ""
-            echo "Access URLs:"
-            echo "- Website: http://localhost:80 or http://<K8S-NODE-IP>:<NodePort>"
-            echo "- Prometheus: http://localhost:9090 or http://<K8S-NODE-IP>:30090"
-            echo "- Grafana: http://localhost:3000 or http://<K8S-NODE-IP>:30300"
-            echo "  - Username: admin"
-            echo "  - Password: admin"
-            echo ""
-            echo "Kubernetes Resources:"
-            kubectl get all -o wide
-            echo ""
-            echo "To view logs:"
-            echo "  kubectl logs -f deployment/tourism-website"
-            echo ""
-            echo "To scale deployment:"
-            echo "  kubectl scale deployment tourism-website --replicas=3"
-            echo ""
-            echo "============================================"
-          '''
+              echo "Deployment health check failed"
+              exit 1
+            '''
+          } else {
+            bat '''
+              @echo off
+              powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $ok=$false; for($i=0; $i -lt 20; $i++){ try { Invoke-WebRequest -UseBasicParsing 'http://127.0.0.1:3000/healthcheck.html' *> $null; $ok=$true; break } catch { Start-Sleep -Seconds 1 } }; if(-not $ok){ throw 'Deployment health check failed' }; Write-Host 'Website deployment healthy'"
+            '''
+          }
         }
       }
     }
@@ -174,36 +190,21 @@ pipeline {
 
   post {
     always {
-      sh '''
-        echo "Cleaning up temporary resources..."
-        docker rm -f tourism-ci-smoke >/dev/null 2>&1 || true
-        docker image prune -f || true
-      '''
+      script {
+        if (isUnix()) {
+          sh 'docker rm -f ${SMOKE_CONTAINER} >/dev/null 2>&1 || true'
+        } else {
+          bat 'docker rm -f %SMOKE_CONTAINER% >nul 2>&1 || exit /b 0'
+        }
+      }
     }
+
     success {
-      echo '''
-        ✅ Jenkins pipeline completed successfully!
-        
-        Monitoring Stack Endpoints:
-        - Prometheus: http://localhost:9090
-        - Grafana: http://localhost:3000
-        
-        Check the 'Display Access URLs' stage for complete information.
-      '''
+      echo 'Pipeline completed successfully. Website is ready.'
     }
+
     failure {
-      echo '''
-        ❌ Pipeline failed. Check stage logs for details.
-        
-        Common issues:
-        1. Docker image build failed - check Dockerfile
-        2. Health check failed - ensure /health endpoint exists
-        3. Kubernetes deployment failed - check cluster status: kubectl get nodes
-        4. Monitoring stack failed - check storage availability
-      '''
-    }
-    unstable {
-      echo '⚠️  Pipeline is unstable. Some tests may have failed.'
+      echo 'Pipeline failed. Check stage logs for details.'
     }
   }
 }
