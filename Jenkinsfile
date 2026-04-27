@@ -69,11 +69,11 @@ pipeline {
                 echo website folder missing
                 exit /b 1
               )
-              if not exist website\index.html (
+              if not exist website\\index.html (
                 echo website\index.html missing
                 exit /b 1
               )
-              for /f %%A in ('dir /b /a-d website\*.html ^| find /c /v ""') do set COUNT=%%A
+              for /f %%A in ('dir /b /a-d website\\*.html ^| find /c /v ""') do set COUNT=%%A
               echo Found !COUNT! HTML files in website/
               if !COUNT! LSS 1 (
                 echo No HTML files found in website/
