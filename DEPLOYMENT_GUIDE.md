@@ -365,7 +365,7 @@ cd /Users/ajayreddy/Desktop/tourism-devops
 git init
 
 # Add remote
-git remote add origin https://github.com/YOUR-USERNAME/tourism-devops.git
+git remote add origin https://github.com/1ds23cs155-rgb/devops.git
 
 # Create main branch
 git checkout -b main

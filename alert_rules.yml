@@ -1,0 +1,73 @@
+groups:
+  - name: tourism_website_alerts
+    interval: 30s
+    rules:
+      # Website availability alert
+      - alert: WebsiteDown
+        expr: up{job="tourism-website"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Tourism website is DOWN"
+          description: "Tourism website at {{ $labels.instance }} has been down for more than 2 minutes"
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "Instance {{ $labels.instance }} CPU usage is above 80%"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Instance {{ $labels.instance }} memory usage is above 85%"
+
+      # Disk space warning
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs"} / node_filesystem_size_bytes) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.device }}"
+          description: "Only {{ $value }}% disk space available on {{ $labels.instance }}"
+
+      # Container restart warning
+      - alert: ContainerRestarting
+        expr: rate(container_last_seen{name="tourism-website"}[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container is restarting frequently"
+          description: "Container {{ $labels.name }} on {{ $labels.instance }} is restarting"
+
+      # HTTP request error rate
+      - alert: HighErrorRate
+        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP error rate"
+          description: "Error rate is {{ $value }}% on {{ $labels.instance }}"
+
+      # Response time degradation
+      - alert: SlowResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow response time detected"
+          description: "95th percentile response time is {{ $value }}s on {{ $labels.instance }}"

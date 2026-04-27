@@ -92,7 +92,7 @@ docker-compose down
 │  3. Push to GitHub:                                             │
 │     git push origin main                                        │
 │                                                                  │
-│  Repository: https://github.com/Ajayreddy-2325/devops.git     │
+│  Repository: https://github.com/1ds23cs155-rgb/devops.git     │
 │                                                                  │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -472,8 +472,8 @@ git log --oneline                    # View commits
 git push origin main                 # Push to GitHub
 
 # GitHub
-# View CI/CD runs: https://github.com/Ajayreddy-2325/devops/actions
-# View images: https://github.com/Ajayreddy-2325/devops/pkgs/container/devops%2Ftourism-website
+# View CI/CD runs: https://github.com/1ds23cs155-rgb/devops/actions
+# View images: https://github.com/1ds23cs155-rgb/devops/pkgs/container/devops%2Ftourism-website
 ```
 
 ---

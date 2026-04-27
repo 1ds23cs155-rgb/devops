@@ -109,9 +109,9 @@ kubectl delete -f kubernetes/
 # (Go to github.com/new)
 
 # Step 2: Initialize git and push code
-cd /Users/ajayreddy/Desktop/tourism-devops
+cd c:/Users/abhir/OneDrive/Desktop/devops
 git init
-git remote add origin https://github.com/YOUR-USERNAME/tourism-devops.git
+git remote add origin https://github.com/1ds23cs155-rgb/devops.git
 git add .
 git commit -m "Initial tourism website DevOps setup"
 git push origin main
